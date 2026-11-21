@@ -182,9 +182,20 @@ def character(kind, name, h, e):
     skin = body_color(name, A["eye_l"], A["eye_rad"])
     for side in ("eye_l", "eye_r"):
         cx, cy = A[side][0] * s, A[side][1] * s
+        if ex["open"] <= 0.06:   # ojo cerrado: linea curva con pestanas
+            cl = Image.new("RGBA", img.size, (0, 0, 0, 0))
+            cd = ImageDraw.Draw(cl)
+            cd.arc([cx - er * 0.9, cy - er * 0.5, cx + er * 0.9, cy + er * 0.6], 15, 165, fill=SKIN_DARK[kind] + (255,), width=max(3, int(er * 0.16)))
+            if kind == "tomate":
+                for k2 in range(3):
+                    a2 = math.radians(50 + k2 * 40)
+                    x0, y0 = cx + math.cos(a2) * er * 0.9, cy + math.sin(a2) * er * 0.55
+                    cd.line([(x0, y0), (x0 + math.cos(a2) * er * 0.35, y0 + math.sin(a2) * er * 0.35)], fill=SKIN_DARK[kind] + (255,), width=max(2, int(er * 0.1)))
+            img.alpha_composite(cl.filter(ImageFilter.GaussianBlur(1.0)))
+            continue
         # sombra de contacto (incrusta el ojo en la piel)
         sh = Image.new("RGBA", (int(er * 3), int(er * 3)), (0, 0, 0, 0))
-        ImageDraw.Draw(sh).ellipse([er * 0.35, er * 0.45, er * 2.65, er * 2.75], fill=(0, 0, 0, 150))
+        ImageDraw.Draw(sh).ellipse([er * 0.4, er * 0.5, er * 2.6, er * 2.7], fill=(0, 0, 0, 100))
         put(img, sh.filter(ImageFilter.GaussianBlur(er * 0.18)), cx, cy + er * 0.08)
         es = eye_img.resize((int(er * 2 * 1.12), int(er * 2 * 1.12)), Image.LANCZOS)
         op = ex["open"]
@@ -219,7 +230,7 @@ def character(kind, name, h, e):
         if ex["glow_eyes"] > 0:
             put(img, glow_spr(int(er * 4), int(er * 4), (255, 220, 90), int(160 * ex["glow_eyes"])), cx, cy)
     # cejas
-    bw = max(3, int(er * 0.32))
+    bw = max(3, int(er * (0.18 if kind == "tomate" else 0.32)))
     for side, sgn in (("eye_l", -1), ("eye_r", 1)):
         cx, cy = A[side][0] * s, A[side][1] * s
         by = cy - er * 1.45 - ex["brow_up"] * er * 0.55
