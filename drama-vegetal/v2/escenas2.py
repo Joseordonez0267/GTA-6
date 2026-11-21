@@ -156,6 +156,13 @@ def load(name):
         warm = np.asarray(Image.fromarray((warm * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(6))).astype(np.float32) / 255
         tgt = np.stack([r * 0.32 + 10, g * 0.25, b * 0.45 + 25], -1)
         a[..., :3] = a[..., :3] * (1 - warm[..., None]) + tgt * warm[..., None]
+        if name == "ber_moon":   # brillo de relleno junto a la boca: se atenua con una mascara suave
+            yy, xx = np.mgrid[0:a.shape[0], 0:a.shape[1]]
+            d = np.sqrt(((xx - 976) / 150.0) ** 2 + ((yy - 1454) / 165.0) ** 2)
+            k = np.clip(1.25 - d, 0, 1) ** 1.5
+            lumi = a[..., :3].mean(2)
+            k *= np.clip((lumi - 45) / 60, 0, 1)
+            a[..., :3] = a[..., :3] * (1 - 0.65 * k[..., None]) + np.array([20, 6, 34]) * 0.65 * k[..., None]
         img = Image.fromarray(a.clip(0, 255).astype(np.uint8))
     return img
 
