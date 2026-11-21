@@ -18,11 +18,13 @@ from arte import W, H, LW, LH, font, hexc, glow, vgrad
 HERE = os.path.dirname(os.path.abspath(__file__))
 BUILD = os.path.join(HERE, "build")
 FPS = 30
+CHUNKS = os.environ.get("CHUNKS", os.path.join(BUILD, "chunks"))
+OUT = os.environ.get("OUT", os.path.join(BUILD, "video_mudo.mp4"))
 XFADE = 0.6
 
 PINK, ORANGE, TEAL, PURPLE, GREEN, RED = "#ff3d8b", "#ffb15c", "#22d3c5", "#8b5cf6", "#3ddc84", "#ff4d4d"
 
-TL = json.load(open(os.path.join(BUILD, "timeline.json"), encoding="utf-8"))
+TL = json.load(open(os.environ.get("TIMELINE", os.path.join(BUILD, "timeline.json")), encoding="utf-8"))
 SCENES = TL["scenes"]
 SUBS = TL["subs"]
 DURATION = TL["duration"]
@@ -702,7 +704,7 @@ def frame_at(tt):
             put(fr, spr, W / 2, H - 70, a, "mb")
             break
     # fundido de entrada y salida
-    fade = min(clamp(tt / 1.0), clamp((DURATION - tt) / 2.0))
+    fade = min(clamp(tt / 1.0), clamp((DURATION - tt) / float(os.environ.get("FADE_OUT", 2.0))))
     out = fr.convert("RGB")
     if fade < 1:
         out = Image.blend(Image.new("RGB", (W, H), (0, 0, 0)), out, fade)
@@ -711,7 +713,7 @@ def frame_at(tt):
 
 def render_chunk(args):
     ci, f0, f1 = args
-    path = os.path.join(BUILD, "chunks", f"c{ci:03d}.mp4")
+    path = os.path.join(CHUNKS, f"c{ci:03d}.mp4")
     if os.path.exists(path + ".done"):
         return path
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS),
@@ -732,19 +734,19 @@ def main():
         for a in sys.argv[sys.argv.index("--preview") + 1:]:
             frame_at(float(a)).save(os.path.join(BUILD, "preview", f"f_{float(a):07.2f}.jpg"), quality=88)
         return
-    os.makedirs(os.path.join(BUILD, "chunks"), exist_ok=True)
+    os.makedirs(CHUNKS, exist_ok=True)
     total = int(math.ceil(DURATION * FPS))
-    step = 600
+    step = int(os.environ.get("STEP", 600))
     jobs = [(i, f0, min(total, f0 + step)) for i, f0 in enumerate(range(0, total, step))]
     procs = int(os.environ.get("PROCS", os.cpu_count() or 4))
     with Pool(procs) as pool:
         paths = pool.map(render_chunk, jobs, chunksize=1)
-    with open(os.path.join(BUILD, "chunks", "list.txt"), "w") as f:
+    with open(os.path.join(CHUNKS, "list.txt"), "w") as f:
         for p in paths:
             f.write(f"file '{os.path.basename(p)}'\n")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i",
-                    os.path.join(BUILD, "chunks", "list.txt"), "-c", "copy", os.path.join(BUILD, "video_mudo.mp4")], check=True)
-    print("video_mudo.mp4 listo")
+                    os.path.join(CHUNKS, "list.txt"), "-c", "copy", OUT], check=True)
+    print(os.path.basename(OUT), "listo")
 
 
 if __name__ == "__main__":

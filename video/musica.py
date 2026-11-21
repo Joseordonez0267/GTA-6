@@ -122,12 +122,11 @@ def simple_reverb(x, mix=0.25):
     return out
 
 
-def make_music(duration, chapters):
+def make_music(duration, chapters, intro_bars=4):
     n = int(duration * SR) + SR
     pads = np.zeros((n, 2)); bass = np.zeros((n, 2)); arps = np.zeros((n, 2)); drums = np.zeros((n, 2))
     K, S, Hh = kick(), snare(), hat()
     bars = int(duration / BAR) + 2
-    intro_bars = 4
     for b in range(bars):
         t0 = b * BAR
         ci = b % 4
