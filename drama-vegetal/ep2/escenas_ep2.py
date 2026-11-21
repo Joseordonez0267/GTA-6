@@ -93,7 +93,7 @@ def shot_hook(t):
     wx, wy, s = plate_xy("room_window", ANC["rooms"]["window"]["window"], 1.08 + 0.02 * t, 0.5, 0.42)
     bump = max([math.exp(-((t - k) * 25) ** 2) for k in KNOCKS])
     pep = character("pepino", "pepB_back_knock", 1250, dict(lid=0.5, mouth="smirk", glow_eyes=0.9))
-    put(fr, pep, wx - 120, wy + 330 + bump * 10, 0.95, scale=1 + bump * 0.03)
+    put(fr, pep, wx - 260, wy + 300 + bump * 10, 0.95, scale=1 + bump * 0.03)
     ber = character("berenjena", "berB_moon_fear", 2250, dict(big=1.15, brow_up=1.4, mouth="o", py=-1.0, px=-0.4, sweat=1.0))
     jx = math.sin(t * 50) * 4
     put(fr, ber, W / 2 + 140 + jx, 2700, anchor="mb")
@@ -162,10 +162,10 @@ def shot_flashback(t):
             x, y = rr.uniform(0, W), rr.uniform(0, H)
             d.line([(x, y), (x - 10, y + 60)], fill=(200, 210, 230, 110), width=2)
     sad = t > 3.2
-    cal = character("calabaza", "calB_moon_fear" if sad else "calB_moon_protect", 1150, dict(mouth="frown" if sad else "smile", brow=0.9 if sad else 0.2, tears=0.8 if sad else 0.0,
+    cal = character("calabaza", "calB_moon_fear" if sad else "calB_moon_protect", 880, dict(mouth="frown" if sad else "smile", brow=0.9 if sad else 0.2, tears=0.8 if sad else 0.0,
                                                        px=0.0, py=0.5 if sad else 0.0, open=blink(t, 3.1)))
-    put(fr, contact_shadow(900), W / 2, 1500)
-    put(fr, cal, W / 2, 1560, anchor="mb")
+    put(fr, contact_shadow(700), W / 2, 1480)
+    put(fr, cal, W / 2, 1530, anchor="mb")
     # las dos semillas: juntas al principio, la tormenta las separa
     sep = eout((t - 3.2) / 1.6) if sad else 0.0
     bb = character("berenjena", "berB_moon_fear" if sad else "berB_moon_happy", 470, dict(mouth="smile" if not sad else "o", brow_up=0.8 if sad else 0.0, px=-0.6, open=blink(t, 2.4)))
@@ -185,9 +185,9 @@ def shot_tomate_wakes(t):
     fr = camera(plate("room_bed", 5), 1.35, 0.55, 0.5)
     mo = env("t1", t + 22.6)
     op = clamp((t - 0.2) / 0.3)
-    tom = character("tomate", "tomB_moon_clasp", 1900, dict(open=op if op > 0.1 else 0.0, brow=0.8, mo=mo, mouth="frown", px=-0.4, py=0.2,
+    tom = character("tomate", "tomB_moon_clasp", 1450, dict(open=op if op > 0.1 else 0.0, brow=0.8, mo=mo, mouth="frown", px=-0.4, py=0.2,
                                                       tears=0.5 if t > 1.5 else 0.0))
-    put(fr, tom, W / 2 + 40, 1640 + math.sin(t * 2) * 5)
+    put(fr, tom, W / 2 + 20, 1330 + math.sin(t * 2) * 5)
     return fr
 
 
