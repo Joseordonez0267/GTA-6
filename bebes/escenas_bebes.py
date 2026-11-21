@@ -104,13 +104,13 @@ def wide_with_lucas(z, fx, fy, lucas_pose="lucas_reach", lucas_expr=None, show_l
     cx, cy, s = plate_xy("cuarto_wide", ANC["cuarto"]["wide"]["crib"], z, fx, fy)
     if show_lucas:
         lu = character("lucas", lucas_pose, int(520 * s), lucas_expr or dict(brow=1.0, mouth="o"))
-        put(fr, lu, cx, cy + 40 * s, anchor="mb")
+        put(fr, lu, cx - 110 * s, cy + 40 * s, anchor="mb")
     crib_layer(fr, "wide", z, fx, fy)
     return fr, (cx, cy, s)
 
 
 def shot_intro(t):
-    fr, _ = wide_with_lucas(1.05 + 0.03 * t / 4.5, 0.5, 0.6)
+    fr, _ = wide_with_lucas(1.05 + 0.03 * t / 4.5, 0.62, 0.6)
     ma = character("mateo", "mateo_sit", 900, dict(brow=-0.5, mouth="smirk", px=0.8, py=-0.4, open=blink(t, 2.9)))
     put(fr, contact_shadow(500), 300, 1800)
     put(fr, ma, 300, 1850, anchor="mb")
@@ -125,8 +125,8 @@ def shot_plan(t):
 
 
 def shot_crawl(t):
-    fr, _ = wide_with_lucas(1.1, 0.5, 0.62)
-    x = 140 + 700 * (t / 4.5)
+    fr, _ = wide_with_lucas(1.1, 0.62, 0.62)
+    x = 140 + 600 * (t / 4.5)
     bob = abs(math.sin(t * 6.3)) * 14
     ma = character("mateo", "mateo_crawl", 780, dict(brow=-0.4, mouth="neutral", px=1.0, open=blink(t, 3.1)))
     put(fr, contact_shadow(420), x, 1830)
@@ -141,8 +141,13 @@ def shot_crawl(t):
 BLOCK_T = (15.4, 16.3, 17.2, 18.1)
 
 
+def block_sprite():
+    b = E.load("bloque")
+    return b.crop(b.getbbox())
+
+
 def blocks(fr, x0, y0, size, tt):
-    blk = E.load("bloque")
+    blk = block_sprite()
     n = sum(1 for b in BLOCK_T if tt >= b)
     for i in range(n):
         drop = eout((tt - BLOCK_T[i]) / 0.25)
@@ -152,8 +157,8 @@ def blocks(fr, x0, y0, size, tt):
 
 def shot_blocks(t):
     tt = t + 15.0
-    fr, (cx, cy, s) = wide_with_lucas(1.6, 0.68, 0.6)
-    blocks(fr, cx - 330, 1850, 230, tt)
+    fr, (cx, cy, s) = wide_with_lucas(1.3, 0.62, 0.6)
+    blocks(fr, 760, 1880, 280, tt)
     cheer = tt >= 17.6
     ma = character("mateo", "mateo_cheer" if cheer else "mateo_sit", 1000,
                    dict(brow=-0.3 if not cheer else 0.3, mouth="smile", mo=env("m2", tt), px=0.6, open=blink(t, 2.6)))
@@ -169,11 +174,12 @@ def shot_almost(t):
     lu = character("lucas", "lucas_reach" if tt < 21.3 else "lucas_cheer", 1250, dict(brow=0.6, mouth="smile", mo=env("l2", tt), px=-0.5, open=blink(t, 2.2)))
     put(fr, lu, W / 2 + 140, 1650, anchor="mb")
     crib_layer(fr, "crib", z, fx, fy)
-    blk = E.load("bloque").resize((300, 300), Image.LANCZOS)
+    blk = block_sprite()
+    blk = blk.resize((300, int(300 * blk.height / blk.width)), Image.LANCZOS)
     for i in range(3):
-        put(fr, blk, 230 + (i % 2) * 20, 2050 - i * 185, 1, "mb")
-    ma = character("mateo", "mateo_reach", 1200, dict(brow=-0.3, mouth="smile", mo=env("m3", tt), px=0.6, py=-0.6, open=blink(t, 2.9)))
-    put(fr, ma, 260, 1560 + math.sin(t * 5) * 6, anchor="mb")
+        put(fr, blk, 200 + (i % 2) * 20, 1990 - i * 190, 1, "mb")
+    ma = character("mateo", "mateo_reach", 980, dict(brow=-0.3, mouth="smile", mo=env("m3", tt), px=0.8, py=-0.6, open=blink(t, 2.9)))
+    put(fr, ma, 210, 1460 + math.sin(t * 5) * 6, anchor="mb")
     return fr
 
 
@@ -199,7 +205,7 @@ def shot_mama_comes(t):
 
 def shot_pretend(t):
     tt = t + 25.0
-    fr, _ = wide_with_lucas(1.1, 0.5, 0.62, "lucas_sleep", dict(open=0.0, mouth="smile"))
+    fr, _ = wide_with_lucas(1.1, 0.62, 0.62, "lucas_sleep", dict(open=0.0, mouth="smile"))
     fr = door_light(fr, 1.0 if tt < 29.4 else 0.0)
     ma = character("mateo", "mateo_sleep", 860, dict(open=0.0, mouth="smile"))
     put(fr, contact_shadow(480), 330, 1820)
@@ -211,7 +217,7 @@ def shot_pretend(t):
 
 
 def shot_dark(t):
-    fr, _ = wide_with_lucas(1.1, 0.5, 0.62, "lucas_sleep", dict(open=0.0, mouth="smile"))
+    fr, _ = wide_with_lucas(1.1, 0.62, 0.62, "lucas_sleep", dict(open=0.0, mouth="smile"))
     fr = door_light(fr, max(0.0, 1 - t / 0.5))
     return Image.blend(fr, Image.new("RGBA", (W, H), (0, 0, 0, 255)), 0.55)
 
