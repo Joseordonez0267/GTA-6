@@ -22,6 +22,39 @@ VOCES = json.load(open(os.path.join(BUILD, "voces.json"), encoding="utf-8"))
 ANC = json.load(open(os.path.join(AS, "anchors.json")))
 
 
+def _fix_phone_corners(c):
+    """Las esquinas exportadas corresponden a (+-0.5, +-0.5) en coordenadas del plano, pero el plano
+    mide 1.35 x 2.883 (escala aplicada). Se calcula la homografia plano->imagen y se reproyecta."""
+    src = [(-0.5, 0.5), (0.5, 0.5), (0.5, -0.5), (-0.5, -0.5)]
+    A, B = [], []
+    for (x, y), (u, v) in zip(src, c):
+        A.append([x, y, 1, 0, 0, 0, -u * x, -u * y]); B.append(u)
+        A.append([0, 0, 0, x, y, 1, -v * x, -v * y]); B.append(v)
+    h = np.linalg.solve(np.array(A, float), np.array(B, float))
+    hx, hy = 1.5 * 0.9 / 2, 3.1 * 0.93 / 2
+    out = []
+    for (x, y) in ((-hx, hy), (hx, hy), (hx, -hy), (-hx, -hy)):
+        d = h[6] * x + h[7] * y + 1
+        out.append([(h[0] * x + h[1] * y + h[2]) / d, (h[3] * x + h[4] * y + h[5]) / d])
+    return out
+
+
+def _detect_screen():
+    """Localiza la pantalla (zona clara) en la placa del telefono y devuelve sus 4 esquinas TL, TR, BR, BL."""
+    a = np.asarray(Image.open(os.path.join(AS, "phone_plate.png")).convert("RGB")).astype(np.int32)
+    m = (a[..., 2] > 140) & (a[..., 0] > 110) & (a[..., 1] > 130)
+    ys, xs = np.nonzero(m)
+    sm, df = xs + ys, xs - ys
+    tl = (xs[sm.argmin()], ys[sm.argmin()]); br = (xs[sm.argmax()], ys[sm.argmax()])
+    tr = (xs[df.argmax()], ys[df.argmax()]); bl = (xs[df.argmin()], ys[df.argmin()])
+    if bl[0] <= 1:   # esquina cortada por el borde del cuadro: se completa el paralelogramo
+        bl = (tl[0] + br[0] - tr[0] - 12, tl[1] + br[1] - tr[1])
+    return [list(map(float, p)) for p in (tl, tr, br, bl)]
+
+
+ANC["phone"] = _detect_screen()
+
+
 # ------------------------------------------------------------------ utilidades
 def clamp(x, a=0.0, b=1.0):
     return a if x < a else b if x > b else x
@@ -420,7 +453,7 @@ def screen_ui(t, mode):
             put(scr, m2, 30, y, clamp((t - 0.5) / 0.15), "lt", scale=0.7 + 0.3 * back((t - 0.5) / 0.3))
             y += m2.height + 26
         if t > 1.2:
-            m3 = bubble("Todavía no… tengo miedo 😔", size=48, incoming=False)
+            m3 = bubble("Todavía no… tengo miedo", size=48, incoming=False)
             put(scr, m3, SCR_W - 30, y, clamp((t - 1.2) / 0.15), "rt", scale=0.7 + 0.3 * back((t - 1.2) / 0.3))
             y += m3.height + 26
         if t > 2.0:
@@ -639,7 +672,7 @@ def shot_frozen(t):
     if t > 2.3:
         a = clamp((t - 2.3) / 1.0)
         pep = character("pepino", "pep_back", 560, dict(lid=0.6, mouth="smirk", px=0.6, glow_eyes=0.8 + 0.2 * math.sin(t * 5)))
-        put(fr, pep, wx - 250, wy - 40, a * 0.92, "mm")
+        put(fr, pep, wx - 330, wy - 170, a * 0.92, "mm")
     zz = 1.0 + 0.22 * ease(t / 5.4)
     ber = character("berenjena", "ber_moon", 1900, dict(open=1.0, big=1.1, brow_up=1.2, mouth="o", sweat=1.0))
     put(fr, ber, W / 2 - 40, 2520 + 260 * (zz - 1), anchor="mb", scale=zz)
