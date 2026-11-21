@@ -114,7 +114,17 @@ def glow_spr(w, h, col, a):
 
 @lru_cache(maxsize=32)
 def load(name):
-    return Image.open(os.path.join(AS, name + ".png")).convert("RGBA")
+    img = Image.open(os.path.join(AS, name + ".png")).convert("RGBA")
+    if name.startswith("ber_"):
+        # atenua el reflejo calido de la luz de relleno (se veia como un parche junto a la boca)
+        a = np.asarray(img).astype(np.float32)
+        r, g, b = a[..., 0], a[..., 1], a[..., 2]
+        warm = np.clip((r - b - 8) / 40, 0, 1) * (r > 90)
+        warm = np.asarray(Image.fromarray((warm * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(6))).astype(np.float32) / 255
+        tgt = np.stack([r * 0.32 + 10, g * 0.25, b * 0.45 + 25], -1)
+        a[..., :3] = a[..., :3] * (1 - warm[..., None]) + tgt * warm[..., None]
+        img = Image.fromarray(a.clip(0, 255).astype(np.uint8))
+    return img
 
 
 @lru_cache(maxsize=16)
@@ -233,7 +243,7 @@ def character(kind, name, h, e):
     bw = max(3, int(er * (0.18 if kind == "tomate" else 0.32)))
     for side, sgn in (("eye_l", -1), ("eye_r", 1)):
         cx, cy = A[side][0] * s, A[side][1] * s
-        by = cy - er * 1.45 - ex["brow_up"] * er * 0.55
+        by = cy - er * 1.28 - ex["brow_up"] * er * 0.45
         inner = [cx - sgn * er * 0.85, by]
         outer = [cx + sgn * er * 1.05, by]
         if ex["brow"] < 0:      # enfado: interior abajo
@@ -628,9 +638,8 @@ def shot_frozen(t):
     wx, wy, s = plate_xy("room_window", ANC["rooms"]["window"]["window"], z, 0.5, 0.45)
     if t > 2.3:
         a = clamp((t - 2.3) / 1.0)
-        pep = character("pepino", "pep_back", 700, dict(lid=0.6, mouth="smirk", px=0.4, glow_eyes=0.8 + 0.2 * math.sin(t * 5)))
-        p2 = Image.blend(pep, Image.new("RGBA", pep.size, (10, 20, 40, 0)), 0.25)
-        put(fr, p2, wx + 120, wy + 200, a * 0.92, "mm")
+        pep = character("pepino", "pep_back", 560, dict(lid=0.6, mouth="smirk", px=0.6, glow_eyes=0.8 + 0.2 * math.sin(t * 5)))
+        put(fr, pep, wx - 250, wy - 40, a * 0.92, "mm")
     zz = 1.0 + 0.22 * ease(t / 5.4)
     ber = character("berenjena", "ber_moon", 1900, dict(open=1.0, big=1.1, brow_up=1.2, mouth="o", sweat=1.0))
     put(fr, ber, W / 2 - 40, 2520 + 260 * (zz - 1), anchor="mb", scale=zz)
