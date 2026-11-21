@@ -92,11 +92,11 @@ def shot_hook(t):
     fr = camera(plate("room_window"), 1.08 + 0.02 * t, 0.5, 0.42)
     wx, wy, s = plate_xy("room_window", ANC["rooms"]["window"]["window"], 1.08 + 0.02 * t, 0.5, 0.42)
     bump = max([math.exp(-((t - k) * 25) ** 2) for k in KNOCKS])
-    pep = character("pepino", "pep_back", 820, dict(lid=0.5, mouth="smirk", glow_eyes=0.9))
-    put(fr, pep, wx - 120, wy + 40 + bump * 10, 0.95, scale=1 + bump * 0.03)
-    ber = character("berenjena", "ber_moon", 1500, dict(big=1.15, brow_up=1.4, mouth="o", py=-1.0, px=-0.4, sweat=1.0))
+    pep = character("pepino", "pepB_back_knock", 1250, dict(lid=0.5, mouth="smirk", glow_eyes=0.9))
+    put(fr, pep, wx - 120, wy + 330 + bump * 10, 0.95, scale=1 + bump * 0.03)
+    ber = character("berenjena", "berB_moon_fear", 2250, dict(big=1.15, brow_up=1.4, mouth="o", py=-1.0, px=-0.4, sweat=1.0))
     jx = math.sin(t * 50) * 4
-    put(fr, ber, W / 2 + 140 + jx, 2350, anchor="mb")
+    put(fr, ber, W / 2 + 140 + jx, 2700, anchor="mb")
     k = back(t / 0.35)
     put(fr, text("¿QUIÉN TOCA", 100, (255, 226, 50), stroke=10), W / 2, 420, clamp(t / 0.1), scale=0.6 + 0.4 * k)
     put(fr, text("LA VENTANA?", 110, stroke=12), W / 2, 545, clamp((t - 0.15) / 0.1), scale=0.6 + 0.4 * back((t - 0.15) / 0.35))
@@ -107,9 +107,9 @@ def shot_scared(t):
     fr = camera(plate("room_corner", 6), 1.15, 0.5, 0.55)
     tr = 4 + 2 * math.sin(t * 4)
     jx = random.Random(int(t * 30)).uniform(-tr, tr)
-    ber = character("berenjena", "ber_moon", 1500, dict(brow=0.6, brow_up=1.0, mouth="wobbly", px=-1.0, py=-0.5, sweat=1.0, open=blink(t, 2.2)))
-    put(fr, contact_shadow(800), W / 2 + 40, 1890)
-    put(fr, ber, W / 2 + 40 + jx, 1980, anchor="mb")
+    ber = character("berenjena", "berB_moon_fear", 1700, dict(brow=0.6, brow_up=1.0, mouth="wobbly", px=-1.0, py=-0.5, sweat=1.0, open=blink(t, 2.2)))
+    put(fr, contact_shadow(600), W / 2 + 40, 1800)
+    put(fr, ber, W / 2 + 40 + jx, 1860, anchor="mb")
     return fr
 
 
@@ -117,8 +117,8 @@ def shot_pepino_window(t):
     fr = camera(plate("room_window", 3), 1.5, 0.42, 0.42)
     fr = Image.blend(fr, Image.new("RGBA", (W, H), (0, 10, 25, 255)), 0.25)
     mo = env("p1", t + 7.0)
-    pep = character("pepino", "pep_moon", 2500, dict(lid=0.35, brow=0.3, mouth="neutral", mo=mo, px=0.0, open=blink(t, 2.9, 0.4)))
-    put(fr, pep, W / 2 + 30, 1420, scale=1.0 + 0.02 * t)
+    pep = character("pepino", "pepB_moon_crossed", 3300, dict(lid=0.35, brow=0.3, mouth="neutral", mo=mo, px=0.0, open=blink(t, 2.9, 0.4)))
+    put(fr, pep, W / 2 + 30, 1900, scale=1.0 + 0.02 * t)
     return fr
 
 
@@ -126,9 +126,9 @@ def shot_ber_confused(t):
     fr = camera(plate("room_corner", 8), 1.3, 0.45, 0.5)
     mo = env("b1", t + 11.0)
     angry = t > 1.1
-    ber = character("berenjena", "ber_moon", 1700, dict(brow=-0.7 if angry else 0.2, brow_up=0.0 if angry else 1.2, mo=mo,
-                                                         mouth="frown" if angry else "o", px=0.6, open=blink(t, 2.5)))
-    put(fr, ber, W / 2, 2080 + math.sin(t * 9) * (4 if angry else 0), anchor="mb")
+    ber = character("berenjena", "berB_moon_point" if angry else "berB_moon_angry", 2100,
+                    dict(brow=-0.7 if angry else 0.2, brow_up=0.0 if angry else 1.2, mo=mo, mouth="frown" if angry else "o", px=0.6, open=blink(t, 2.5)))
+    put(fr, ber, W / 2 - (90 if angry else 0), 2120 + math.sin(t * 9) * (4 if angry else 0), anchor="mb")
     return fr
 
 
@@ -162,18 +162,18 @@ def shot_flashback(t):
             x, y = rr.uniform(0, W), rr.uniform(0, H)
             d.line([(x, y), (x - 10, y + 60)], fill=(200, 210, 230, 110), width=2)
     sad = t > 3.2
-    cal = character("calabaza", "cal_moon", 640, dict(mouth="frown" if sad else "smile", brow=0.9 if sad else 0.2, tears=0.8 if sad else 0.0,
+    cal = character("calabaza", "calB_moon_fear" if sad else "calB_moon_protect", 1150, dict(mouth="frown" if sad else "smile", brow=0.9 if sad else 0.2, tears=0.8 if sad else 0.0,
                                                        px=0.0, py=0.5 if sad else 0.0, open=blink(t, 3.1)))
-    put(fr, contact_shadow(1000), W / 2, 1425)
-    put(fr, cal, W / 2, 1460, anchor="mb")
+    put(fr, contact_shadow(900), W / 2, 1500)
+    put(fr, cal, W / 2, 1560, anchor="mb")
     # las dos semillas: juntas al principio, la tormenta las separa
     sep = eout((t - 3.2) / 1.6) if sad else 0.0
-    bb = character("berenjena", "ber_moon", 330, dict(mouth="smile" if not sad else "o", brow_up=0.8 if sad else 0.0, px=-0.6, open=blink(t, 2.4)))
-    pb = character("pepino", "pep_moon", 380, dict(mouth="smile" if not sad else "o", brow_up=0.8 if sad else 0.0, px=0.6, open=blink(t, 2.7, 1.0)))
+    bb = character("berenjena", "berB_moon_fear" if sad else "berB_moon_happy", 470, dict(mouth="smile" if not sad else "o", brow_up=0.8 if sad else 0.0, px=-0.6, open=blink(t, 2.4)))
+    pb = character("pepino", "pepB_moon_open", 560, dict(mouth="smile" if not sad else "o", brow_up=0.8 if sad else 0.0, px=0.6, open=blink(t, 2.7, 1.0)))
     put(fr, contact_shadow(220), W / 2 - 230 - sep * 700, 1640)
-    put(fr, bb, W / 2 - 230 - sep * 700, 1660, anchor="mb")
+    put(fr, bb, W / 2 - 230 - sep * 700, 1680, anchor="mb")
     put(fr, contact_shadow(160), W / 2 + 230 + sep * 700, 1640)
-    put(fr, pb, W / 2 + 230 + sep * 700, 1660, anchor="mb")
+    put(fr, pb, W / 2 + 230 + sep * 700, 1680, anchor="mb")
     # relampagos
     for tf in (0.5, 4.2):
         if tf <= t < tf + 0.25:
@@ -185,9 +185,9 @@ def shot_tomate_wakes(t):
     fr = camera(plate("room_bed", 5), 1.35, 0.55, 0.5)
     mo = env("t1", t + 22.6)
     op = clamp((t - 0.2) / 0.3)
-    tom = character("tomate", "tom_moon", 1150, dict(open=op if op > 0.1 else 0.0, brow=0.8, mo=mo, mouth="frown", px=-0.4, py=0.2,
+    tom = character("tomate", "tomB_moon_clasp", 1900, dict(open=op if op > 0.1 else 0.0, brow=0.8, mo=mo, mouth="frown", px=-0.4, py=0.2,
                                                       tears=0.5 if t > 1.5 else 0.0))
-    put(fr, tom, W / 2 + 40, 1500 + math.sin(t * 2) * 5)
+    put(fr, tom, W / 2 + 40, 1640 + math.sin(t * 2) * 5)
     return fr
 
 
@@ -196,13 +196,14 @@ def shot_reunion(t):
     fr = Image.blend(fr, Image.new("RGBA", (W, H), (255, 170, 90, 255)), 0.12)
     mo = env("b2", t + 27.0)
     lean = math.sin(t * 2.2) * 0.02
-    ber = character("berenjena", "ber_moon", 1250, dict(mouth="smile", mo=mo, brow=0.6, brow_up=0.6, tears=0.7, px=0.7, open=blink(t, 2.8)))
-    pep = character("pepino", "pep_moon", 1350, dict(mouth="smile", brow=0.3, px=-0.7, lid=0.15, open=blink(t, 3.2, 1.3)))
-    tom = character("tomate", "tom_moon", 520, dict(mouth="smile", px=0.0, py=-0.6, brow=0.4))
-    put(fr, contact_shadow(700), 330, 1880); put(fr, contact_shadow(420), 790, 1880)
-    put(fr, ber, 330, 1910, anchor="mb", scale=1 + lean)
-    put(fr, pep, 790, 1910, anchor="mb", scale=1 - lean)
-    put(fr, tom, W / 2, 1930, anchor="mb")
+    ber = character("berenjena", "berB_moon_happy", 1400, dict(mouth="smile", mo=mo, brow=0.6, brow_up=0.6, tears=0.7, px=0.7, open=blink(t, 2.8)))
+    pep = character("pepino", "pepB_moon_open", 1550, dict(mouth="smile", brow=0.3, px=-0.7, lid=0.15, open=blink(t, 3.2, 1.3)))
+    tom = character("tomate", "tomB_moon_happy", 760, dict(mouth="smile", px=0.0, py=-0.6, brow=0.4))
+    put(fr, contact_shadow(520), 300, 1790); put(fr, contact_shadow(380), 800, 1790)
+    put(fr, ber, 300, 1830, anchor="mb", scale=1 + lean)
+    put(fr, pep, 800, 1830, anchor="mb", scale=1 - lean)
+    put(fr, contact_shadow(380), W / 2 + 10, 1840)
+    put(fr, tom, W / 2 + 10, 1880, anchor="mb")
     # corazones flotando
     rr = random.Random(2)
     for k in range(10):
@@ -246,23 +247,24 @@ def shot_pepino_evil(t):
     fr = camera(plate("room_corner", 10), 1.2, 0.5, 0.55)
     # la pareja feliz al fondo (desenfocada)
     bg = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    ber = character("berenjena", "ber_moon", 700, dict(mouth="smile", brow=0.5, px=0.6))
-    tom = character("tomate", "tom_moon", 330, dict(mouth="smile", px=-0.6))
+    ber = character("berenjena", "berB_moon_happy", 950, dict(mouth="smile", brow=0.5, px=0.6))
+    tom = character("tomate", "tomB_moon_happy", 560, dict(mouth="smile", px=-0.6))
     put(bg, ber, 300, 1250, anchor="mb"); put(bg, tom, 520, 1260, anchor="mb")
     fr.alpha_composite(bg.filter(ImageFilter.GaussianBlur(9)))
     fr = Image.blend(fr, Image.new("RGBA", (W, H), (10, 0, 20, 255)), 0.3)
     evil = ease((t - 1.2) / 1.5)
-    pep = character("pepino", "pep_moon", 2400, dict(lid=0.25 + 0.4 * evil, brow=-0.8 * evil, mouth="smirk" if evil > 0.3 else "smile",
-                                                      px=1.0 if t < 1.0 else 0.0, glow_eyes=evil))
-    put(fr, pep, W / 2 + 220, 1180 + 30 * (1 - evil), scale=1.0 + 0.04 * t)
+    pep = character("pepino", "pepB_moon_evil", 3200, dict(lid=0.25 + 0.4 * evil, brow=-0.8 * evil, mouth="smirk" if evil > 0.3 else "smile",
+                                                            px=1.0 if t < 1.0 else 0.0, glow_eyes=evil))
+    rub = math.sin(t * 14) * 6 * evil
+    put(fr, pep, W / 2 + 200 + rub, 1650 + 30 * (1 - evil), scale=1.0 + 0.04 * t)
     return fr
 
 
 def shot_ber_innocent(t):
     fr = camera(plate("room_corner", 8), 1.3, 0.45, 0.5)
     fr = Image.blend(fr, Image.new("RGBA", (W, H), (255, 170, 90, 255)), 0.1)
-    ber = character("berenjena", "ber_moon", 1700, dict(mouth="smile", brow=0.4, brow_up=0.5, open=blink(t, 1.0, 0.7) if t > 0.6 else 1.0))
-    put(fr, ber, W / 2, 2080, anchor="mb", scale=1 + 0.03 * t)
+    ber = character("berenjena", "berB_moon_idle", 2300, dict(mouth="smile", brow=0.4, brow_up=0.5, open=blink(t, 1.0, 0.7) if t > 0.6 else 1.0))
+    put(fr, ber, W / 2, 2500, anchor="mb", scale=1 + 0.03 * t)
     return fr
 
 

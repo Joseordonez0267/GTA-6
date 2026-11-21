@@ -347,6 +347,9 @@ def character(kind, name, h, e):
         dd.ellipse([cx - er * 0.38, cy - er * 0.2, cx + er * 0.38, cy + er * 0.5], fill=(180, 220, 255, 200))
         dd.ellipse([cx - er * 0.15, cy - er * 0.05, cx + er * 0.0, cy + er * 0.15], fill=(255, 255, 255, 255))
         img.alpha_composite(sd.filter(ImageFilter.GaussianBlur(0.8)))
+    if A.get("limbs"):   # extremidades que pasan por delante de la cara
+        lb = load(name + "_limbs")
+        img.alpha_composite(lb.resize(img.size, Image.LANCZOS))
     if len(_C) > 2500:
         _C.clear()
     _C[key] = img
