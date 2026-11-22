@@ -17,10 +17,11 @@ DUR = 45.0
 
 # voz neuronal, tono y velocidad por personaje
 VOZ = {
-    "narrador": ("es-MX-JorgeNeural", "-2Hz", "-6%"),
-    "mateo": ("es-US-AlonsoNeural", "+48Hz", "+6%"),
-    "lucas": ("es-MX-DaliaNeural", "+75Hz", "+8%"),
-    "mama": ("es-CO-SalomeNeural", "+0Hz", "-4%"),
+    # voces nativas, con cambios de tono minimos (los cambios grandes suenan roboticos)
+    "narrador": ("es-MX-JorgeNeural", "+0Hz", "-4%"),
+    "mateo": ("es-US-PalomaNeural", "+10Hz", "+4%"),
+    "lucas": ("es-MX-DaliaNeural", "+18Hz", "+6%"),
+    "mama": ("es-CO-SalomeNeural", "-4Hz", "-6%"),
 }
 
 # (id, quien, texto, inicio, fin maximo)
@@ -62,8 +63,10 @@ def make_voices():
             mp3 = os.path.join(BUILD, f"{vid}.mp3")
             tts(text.replace("…", "...").replace("AHORA", "ahora"), who, extra, mp3)
             wav = os.path.join(BUILD, f"{vid}.wav")
+            # recorte de silencios + un poco de "sala" para que no suene tan seca
             subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", mp3, "-af", "silenceremove=start_periods=1:start_threshold=-45dB,areverse,"
-                            "silenceremove=start_periods=1:start_threshold=-45dB,areverse", "-ac", "1", "-ar", str(SR), wav], check=True)
+                            "silenceremove=start_periods=1:start_threshold=-45dB,areverse,highpass=f=80,"
+                            "equalizer=f=250:t=q:w=1:g=1.5,aecho=0.85:0.5:23|41:0.12|0.07,apad=pad_dur=0.15", "-ac", "1", "-ar", str(SR), wav], check=True)
             x, _ = wav_read(wav)
             if t0 + len(x) / SR <= tmax or extra >= 30:
                 break
